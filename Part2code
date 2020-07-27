@@ -1,0 +1,143 @@
+public void setup() {
+		//size(950, 600, OPENGL);
+		size(950, 600);
+
+		if (offline) {
+		    map = new UnfoldingMap(this, 200, 50, 700, 500, new MBTilesMapProvider(mbTilesString));
+		    earthquakesURL = "2.5_week.atom"; 	// Same feed, saved Aug 7, 2015, for working offline
+		}
+		else {
+			map = new UnfoldingMap(this, 200, 50, 700, 500, new Microsoft.HybridProvider());
+			// IF YOU WANT TO TEST WITH A LOCAL FILE, uncomment the next line
+			//earthquakesURL = "2.5_week.atom";
+		}
+		
+	    map.zoomToLevel(2);
+	    MapUtils.createDefaultEventDispatcher(this, map);	
+			
+	    // The List you will populate with new SimplePointMarkers
+	    List<Marker> markers = new ArrayList<Marker>();
+
+	    //Use provided parser to collect properties for each earthquake
+	    //PointFeatures have a getLocation method
+	    List<PointFeature> earthquakes = ParseFeed.parseEarthquake(this, earthquakesURL);
+	    
+	    //TODO (Step 3): Add a loop here that calls createMarker (see below) 
+	    // to create a new SimplePointMarker for each PointFeature in 
+	    // earthquakes.  Then add each new SimplePointMarker to the 
+	    // List markers (so that it will be added to the map in the line below)
+	    for (PointFeature earthquake: earthquakes )
+	    {
+	    	SimplePointMarker earthquakeMarker = createMarker (earthquake);
+	    	markers.add(earthquakeMarker);
+	    }
+	    
+	    // Add the markers to the map so that they are displayed
+	    map.addMarkers(markers);
+	}
+		
+	/* createMarker: A suggested helper method that takes in an earthquake 
+	 * feature and returns a SimplePointMarker for that earthquake
+	 * 
+	 * In step 3 You can use this method as-is.  Call it from a loop in the 
+	 * setup method.  
+	 * 
+	 * TODO (Step 4): Add code to this method so that it adds the proper 
+	 * styling to each marker based on the magnitude of the earthquake.  
+	*/
+	private SimplePointMarker createMarker(PointFeature feature)
+	{  
+		// To print all of the features in a PointFeature (so you can see what they are)
+		// uncomment the line below.  Note this will only print if you call createMarker 
+		// from setup
+		//System.out.println(feature.getProperties());
+		
+		// Create a new SimplePointMarker at the location given by the PointFeature
+		SimplePointMarker marker = new SimplePointMarker(feature.getLocation());
+		
+		Object magObj = feature.getProperty("magnitude");
+		float mag = Float.parseFloat(magObj.toString());
+		
+		// Here is an example of how to use Processing's color method to generate 
+	    // an int that represents the color yellow.  
+		
+	    int yellow = color(255, 255, 0);
+	    int blue = color(0, 0, 255);
+		int red = color(255, 0, 0);
+		float earthquakeRadius = 0; //initialize radius
+		int earthquakecolor = 0; //initialize color
+		
+		// TODO (Step 4): Add code below to style the marker's size and color 
+	    // according to the magnitude of the earthquake.  
+	    // Don't forget about the constants THRESHOLD_MODERATE and 
+	    // THRESHOLD_LIGHT, which are declared above.
+	    // Rather than comparing the magnitude to a number directly, compare 
+	    // the magnitude to these variables (and change their value in the code 
+	    // above if you want to change what you mean by "moderate" and "light")
+	   
+		if (mag < 4.0) {earthquakeRadius = 8; earthquakecolor = blue;}
+    	else if (mag <5.0) {earthquakeRadius = 15; earthquakecolor = yellow;}
+    	else {earthquakeRadius = 25; earthquakecolor = red;} // select radius depending on magnitude
+    	
+		Location earthquakeLocation = feature.getLocation(); // get locations
+		SimplePointMarker earthquakeMarker = new SimplePointMarker(earthquakeLocation);
+		earthquakeMarker.setRadius(earthquakeRadius); // sets radius
+		earthquakeMarker.setColor(earthquakecolor);
+		
+	    // Finally return the marker
+	    return earthquakeMarker;
+	}
+	
+	public void draw() {
+	    background(10);
+	    map.draw();
+	    addKey();
+	}
+
+
+	// helper method to draw key in GUI
+	// TODO: Implement this method to draw the key
+	private void addKey() 
+	{	
+		// Remember you can use Processing's graphics methods here
+		
+	
+		//creating the key canvas
+		//int numberOfEarthquakes = earthquakes.size();
+		int leftMargin = 20;
+		int keyWidth = 160;
+		int keyCenter = leftMargin + keyWidth / 2;
+		
+		fill(255, 255, 255);
+		rect(leftMargin, 50, keyWidth, 250);
+		fill(0, 0, 0);
+		textAlign(CENTER, CENTER);
+		textSize(15);
+		text("Earthquake Key", keyCenter, 80);
+		
+		//creating the red circle
+		fill(255, 0, 0);
+		ellipse(45, 140, 25,25); 
+		textAlign(LEFT, CENTER);
+		textSize(12);
+		fill(0, 0, 0);
+		text("5.0 + Magnitude", 70, 140); 
+		
+		//creating the blue circle
+		fill(0, 0, 255);
+		ellipse(45, 210, 8,8); 
+		textAlign(LEFT, CENTER);
+		
+		fill(0, 0, 0);
+		text("Below 4.0", 70, 210);
+		
+		//creating the yellow circle
+		fill(255, 255, 0);
+		ellipse(45, 180, 15,15); 
+		textAlign(LEFT, CENTER);
+		
+		fill(0, 0, 0);
+		text("4.0 + Magnitude", 70, 180); 
+	
+	}
+  }
